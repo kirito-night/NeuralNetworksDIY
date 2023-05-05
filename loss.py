@@ -87,6 +87,8 @@ class BCELoss(Loss):
             f"dimension mismatch, y and yhat must of same dimension. "
             f"Here it is {y.shape} and {yhat.shape}"
         )
+        y = np.clip(y, 1e-15, 1 - 1e-15)
+        yhat = np.clip(yhat, 1e-15, 1 - 1e-15)
         res = -(y * np.maximum(-100, np.log(yhat))+ (1 - y) * np.maximum(-100, np.log(1 - yhat)))
         #print(f"foward : res, {res} \n")
 
