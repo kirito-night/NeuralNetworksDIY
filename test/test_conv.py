@@ -55,6 +55,7 @@ net = Sequential(
 loss = CrossEntropyLoss()
 
 
+
 Lerror, Lscore= SGD(net, loss, X_train, Y_train, predict= lambda x : np.argmax(net.forward(x),axis = 1), xtest = X_test, ytest = np.argmax(Y_test,axis =1), batch_size=5, max_iter=100, eps =0.001)
 
 
