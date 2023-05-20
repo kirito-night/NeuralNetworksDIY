@@ -122,7 +122,8 @@ def SGD(net, loss, datax, datay, predict=None, xtest = None , ytest = None,  bat
 
     Lerror = []
     Lscore = []
-    #Lscore_train = []
+    Lerror_train = []
+    Lscore_train = []
     for iteration in range(max_iter):
         print("Epoch: {0} / {1}".format(iteration, max_iter))
         # descente de gradient mini-batch
@@ -130,100 +131,26 @@ def SGD(net, loss, datax, datay, predict=None, xtest = None , ytest = None,  bat
             batch_x, batch_y = xtrain[index], ytrain[index] 
             optimisation.step(batch_x, batch_y)
         # calcule du cout
-        cost = loss.forward(datay, net.forward(datax)).mean()
-        print("Loss " ,round(cost, 3))
-        Lerror.append(cost)
+
+        #cost = loss.forward(datay, net.forward(datax)).mean()
+        cost_train = loss.forward(ytrain, net.forward(xtrain)).mean()
+        cost_test = loss.forward(ytest, net.forward(xtest)).mean()
+        #print("Loss " ,round(cost, 3))
+        print("Loss train  " ,round(cost_train, 3))
+        print("Loss test" ,round(cost_test, 3))
+        Lerror.append(cost_test)
+        Lerror_train.append(cost_train)
         if predict is not  None:
-            #score_train = np.mean(predict(xtrain) == ytrain)
+            score_train = np.mean(predict(xtrain) == ytrain)
             score_test = np.mean(predict(xtest) == ytest)
             Lscore.append(score_test)
-            #Lscore_train.append(score_train)
-            print("score " ,round(Lscore[-1], 3))
-            #print("score: {} (train) {} (test)".format(round(score_train, 3), round(score_test, 3)))
-    return np.array(Lerror), np.array(Lscore)
+            Lscore_train.append(score_train)
+            #print("score " ,round(Lscore[-1], 3))
+            print("score: {} (train) {} (test)".format(round(score_train, 3), round(score_test, 3)))
+    return np.array(Lerror), np.array(Lscore), np.array(Lerror_train), np.array(Lscore_train)
 
 
 
-
-# class Conv1D(Module):
-#     def __init__(self, k_size, chan_in, chan_out , stride=1):
-#         """(k_size,chan_in,chan_out)"""
-#         super().__init__()
-#         self._k_size = k_size  # taille du filtre
-#         self._chan_in = chan_in  # C
-#         self._chan_out = chan_out  # nombre de filtres
-#         self._stride = stride
-#         self._parameters = np.random.rand(k_size, chan_in, chan_out)  # filtres
-
-#     def forward(self, X):
-#         """Performe une convolution en 1D sans boucles for.
-#         Parameters
-#         ----------
-#         X : ndarray (batch, length, chan_in)
-#         Returns
-#         -------
-#         ndarray (batch, (length-k_size)/stride + 1, chan_out)"""
-#         batch_size, length, chan_in = X.shape
-#         assert chan_in == self._chan_in, f"X must have {self._chan_in} channels. Here X have {chan_in} channels." 
-        
-#         batch_stride, length_stride, chan_stride = X.strides
-
-#         out_size = int((length - self._k_size) / self._stride + 1)
-#         new_shape = (batch_size, out_size, chan_in, self._k_size)
-#         new_strides = (
-#             batch_stride,
-#             self._stride * length_stride,
-#             chan_stride,
-#             length_stride,
-#         )
-
-#         X_windows = np.lib.stride_tricks.as_strided(X, new_shape, new_strides)
-
-#         self.inputs = X, X_windows
-#         output = np.einsum("blck,kcf->blf", X_windows, self._parameters)
-#         return output
-
-#     def backward_update_gradient(self, input, delta):
-#         """TO DO"""
-#         batch, length, chan_in = input.shape
-#         assert chan_in == self._chan_in
-#         batch_size, out_size, chan_in, k_size = self.inputs[1].shape
-#         input_windows = np.lib.stride_tricks.as_strided(
-#             input, (batch_size, out_size, chan_in, k_size), self.inputs[1].strides
-#         )
-#         print(input_windows.shape)
-#         #self._gradient += np.einsum("blck,lcf->bkf", input_windows, delta) / batch
-
-#     def backward_delta(self, input, delta):
-#         """TO DO"""
-#         np.einsum("", delta, self._parameters)
-#         ...
-
-#     def forward_loops(self, X):
-#         """Performe une convolution en 1D avec des boucles for."""
-#         batch, length, chan_in = X.shape
-#         assert chan_in == self._chan_in
-
-#         # Initialize the output array
-#         out_size = int((length - self._k_size) / self._stride + 1)
-#         out = np.zeros((batch, out_size, self._chan_out))
-
-#         # Convolve for each batch element
-#         for b in range(batch):
-#             # Convolve for each output channel
-#             for c_out in range(self._chan_out):
-#                 # Convolve for each position in the output
-#                 for i in range(out_size):
-#                     # Compute the receptive field
-#                     start = i * self._stride
-#                     end = start + self._k_size
-
-#                     # Compute the convolution
-#                     out[b, i, c_out] = np.sum(
-#                         X[b, start:end, :] * self._parameters[:, :, c_out]
-#                     )
-
-#         return out
 
 
 class Conv1D(Module):
@@ -365,25 +292,3 @@ class Flatten(Module):
 
 
 
-
-# class Flatten(Module):
-#     def forward(self, X):
-#         ## Calcule la passe forward
-#         d = len(X.shape)
-#         assert d==3 or d==4
-#         self.shape = X.shape
-#         if d == 3:
-#             batch, length, chan_in = X.shape
-#             return np.reshape(X, (batch, length*chan_in))
-#         else:
-#             batch, h, w, chan_in = X.shape
-#             h = max(h,1)
-#             w = max(w,1)
-#             return np.reshape(X, (batch, h*w*chan_in))
-
-#     def backward_delta(self, input, delta):
-#         ## Deflat delta
-#         return np.reshape(delta, self.shape)
-    
-#     def update_parameters(self, gradient_step=1e-3):
-#         pass
