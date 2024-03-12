@@ -1,9 +1,9 @@
 # ML_project
 Implementation of a Neural Networks library from scratch, using only Python and Numpy. Inspired from old Lua versions of Torch, before the autograd 
 
-Made alone without group \
+Made alone without group 
 
-Machine Learning project during  first years of Master DAC at Sorbonne University \
+Machine Learning project during  first years of Master DAC at Sorbonne University
 
 - activation.py : contains all activation functions (TanH, sigmoid, ReLU)
 - loss.py : contains all loss functions (CrossEntropyLoss, BCELoss, MSELoss)
